@@ -74,16 +74,19 @@ WSGI_APPLICATION = 'demoapp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+import dj_database_url
+import os
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'demo_db',           # Your database name
-        'USER': 'demo_user',         # Your PostgreSQL username
-        'PASSWORD': 'Datta@2505',    # Your PostgreSQL password
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL')  # Render database URL
+    )
 }
+
+# Optional: DEBUG & Hosts
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'unsafe-secret-key')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 
 
 # Password validation
