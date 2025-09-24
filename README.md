@@ -1,4 +1,4 @@
-# Django Full Stack Data Engineer Demo Project
+# Django Full Stack Data Engineer Project
 
 ## Overview
 This is a demo project built with **Django**, **PostgreSQL**, and **Django REST Framework** to showcase full-stack data engineering skills. The project demonstrates:
