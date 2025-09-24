@@ -8,12 +8,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.urls import reverse
 from django.core.cache import cache
-
-# -----------------------------
-# Constants
-# -----------------------------
-CRYPTO_IDS = 'bitcoin,ethereum,ripple,cardano,dogecoin,polkadot,binancecoin,solana,shiba-inu,litecoin'
-CRYPTO_CACHE_TIMEOUT = 300  # seconds (5 minutes)
+from datetime import timedelta
 
 # -----------------------------
 # CRUD API for Products
@@ -34,7 +29,7 @@ def crypto_prices(request):
 
     url = "https://api.coingecko.com/api/v3/simple/price"
     params = {
-        'ids': CRYPTO_IDS,
+        'ids': 'bitcoin,ethereum,ripple,cardano,dogecoin,polkadot,binancecoin,solana,shiba-inu,litecoin',
         'vs_currencies': 'usd'
     }
 
@@ -43,12 +38,12 @@ def crypto_prices(request):
         response.raise_for_status()
         data = response.json()
 
-        # Check for API rate-limit error
+        # Check if API returned a rate-limit error
         if "error_code" in data:
             return Response({"error": "Rate limit exceeded. Please try again later."}, status=429)
 
         # Cache the result for 5 minutes
-        cache.set('crypto_prices', data, timeout=CRYPTO_CACHE_TIMEOUT)
+        cache.set('crypto_prices', data, timeout=300)
         return Response(data)
 
     except requests.RequestException as e:
@@ -62,9 +57,10 @@ def crypto_chart(request):
     if cached_data:
         data = cached_data
     else:
+        # Fetch fresh data if cache is empty
         url = "https://api.coingecko.com/api/v3/simple/price"
         params = {
-            'ids': CRYPTO_IDS,
+            'ids': 'bitcoin,ethereum,ripple,cardano,dogecoin,polkadot,binancecoin,solana,shiba-inu,litecoin',
             'vs_currencies': 'usd'
         }
         try:
@@ -73,7 +69,7 @@ def crypto_chart(request):
             data = response.json()
             if "error_code" in data:
                 return render(request, "items/error.html", {"message": "Rate limit exceeded. Please try again later."})
-            cache.set('crypto_prices', data, timeout=CRYPTO_CACHE_TIMEOUT)
+            cache.set('crypto_prices', data, timeout=300)
         except requests.RequestException as e:
             return render(request, "items/error.html", {"message": f"Failed to fetch crypto prices: {e}"})
 
