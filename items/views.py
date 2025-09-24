@@ -7,8 +7,6 @@ import requests
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.urls import reverse
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 
 # -----------------------------
 # CRUD API for Products
@@ -24,7 +22,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 def crypto_prices(request):
     url = "https://api.coingecko.com/api/v3/simple/price"
     params = {
-        'ids': 'bitcoin,ethereum,ripple,cardano,dogecoin,polkadot,binancecoin,solana,shiba-inu,litecoin',  # 10 cryptos
+        'ids': 'bitcoin,ethereum,ripple,cardano,dogecoin,polkadot,binancecoin,solana,shiba-inu,litecoin',
         'vs_currencies': 'usd'
     }
     response = requests.get(url, params=params)
@@ -37,13 +35,13 @@ def crypto_prices(request):
 def crypto_chart(request):
     url = "https://api.coingecko.com/api/v3/simple/price"
     params = {
-        'ids': 'bitcoin,ethereum,ripple,cardano,dogecoin,polkadot,binancecoin,solana,shiba-inu,litecoin',  # 10 cryptos
+        'ids': 'bitcoin,ethereum,ripple,cardano,dogecoin,polkadot,binancecoin,solana,shiba-inu,litecoin',
         'vs_currencies': 'usd'
     }
     response = requests.get(url, params=params)
     data = response.json()
 
-    names = list(data.keys())                       # ['bitcoin', 'ethereum', ...]
+    names = list(data.keys())
     prices = [data[name]['usd'] for name in names]
 
     fig = px.bar(
@@ -72,17 +70,24 @@ def product_chart(request):
     chart = fig.to_html(full_html=False)
     return render(request, "items/product_chart.html", {"chart": chart})
 
+# -----------------------------
+# API Root: clickable endpoints
+# -----------------------------
 @api_view(['GET'])
 def api_root(request):
     """
-    Custom API root with all endpoints clickable.
+    Custom API root returning all endpoints as clickable links.
     """
     return Response({
-        "Product CRUD": {
-            "List / Create": request.build_absolute_uri(reverse('product-list')),
-            "Detail / Update / Delete (example ID=1)": request.build_absolute_uri('/api/products/1/')
-        },
-        "Product Chart": request.build_absolute_uri('/api/product-chart/'),
-        "Crypto Prices API": request.build_absolute_uri('/api/crypto-prices/'),
-        "Crypto Chart": request.build_absolute_uri('/api/crypto-chart/')
+        "message": "Welcome to DemoApp API!",
+        "api_root": request.build_absolute_uri('/api/'),
+        "endpoints": {
+            "Product CRUD": {
+                "List / Create": request.build_absolute_uri(reverse('product-list')),
+                "Detail / Update / Delete (example ID=1)": request.build_absolute_uri('/api/products/1/')
+            },
+            "Product Chart": request.build_absolute_uri('/api/product-chart/'),
+            "Crypto Prices API": request.build_absolute_uri('/api/crypto-prices/'),
+            "Crypto Chart": request.build_absolute_uri('/api/crypto-chart/')
+        }
     })
